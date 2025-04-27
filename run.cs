@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 
 public enum BookingStatus
 {
-    CheckIn,
-    CheckOut
+    CheckIn = 1,
+    CheckOut = 2
 }
 
 class HotelCapacity
@@ -19,8 +19,13 @@ class HotelCapacity
             bookings.Add((guest.CheckOut, BookingStatus.CheckOut));
         }
 
-        bookings.Sort((first, second)
-            => string.Compare(first.Date, second.Date, StringComparison.Ordinal));
+        bookings.Sort((first, second) =>
+        {
+            var dateComparison = string.Compare(first.Date, second.Date, StringComparison.Ordinal);
+            return dateComparison != 0
+                ? dateComparison
+                : first.Status.CompareTo(second.Status);
+        });
 
         var currentOccupiedRoomsCount = 0;
         foreach (var booking in bookings)
