@@ -10,6 +10,11 @@ public enum BookingStatus
 
 class HotelCapacity
 {
+    /// <summary>
+    /// В условии не сказано про то, может ли один и тот же гость встречаться в списке дважды.
+    /// Если может, то он занимает тот же номер, поэтому нужно учесть продление брониварония,
+    /// как это делается в методе CheckCapacityIfExtensionAllowed.
+    /// </summary>
     static bool CheckCapacity(int maxCapacity, List<Guest> guests)
     {
         var bookings = new List<(string Date, BookingStatus Status)>();
@@ -39,7 +44,53 @@ class HotelCapacity
         
         return true;
     }
+    
+    /// <summary>
+    /// Проверяет, возможно ли разместить всех гостей, если допускать продлевание бронирования.
+    /// Учитывает случаи, когда в списке гостей встречается один и тот же гость, даты бронирований которого пересекаются.
+    /// </summary>
+    static bool CheckCapacityIfExtensionAllowed(int maxCapacity, List<Guest> guests)
+    {
+        var bookings = new List<(string Name, string Date, BookingStatus Status)>();
+        var currentBookingsCountByName = new Dictionary<string, int>();
+        foreach (var guest in guests)
+        {
+            bookings.Add((guest.Name, guest.CheckIn, BookingStatus.CheckIn));
+            bookings.Add((guest.Name, guest.CheckOut, BookingStatus.CheckOut));
+            currentBookingsCountByName.TryAdd(guest.Name, 0);
+        }
 
+        bookings.Sort((first, second) =>
+        {
+            var dateComparison = string.Compare(first.Date, second.Date, StringComparison.Ordinal);
+            return dateComparison != 0
+                ? dateComparison
+                : first.Status.CompareTo(second.Status);
+        });
+
+        var currentOccupiedRoomsCount = 0;
+        foreach (var booking in bookings)
+        {
+            switch (booking.Status)
+            {
+                case BookingStatus.CheckIn:
+                    if (currentBookingsCountByName[booking.Name] == 0)
+                        currentOccupiedRoomsCount++;
+                    currentBookingsCountByName[booking.Name]++;
+                    break;
+                case BookingStatus.CheckOut:
+                    currentBookingsCountByName[booking.Name]--;
+                    if (currentBookingsCountByName[booking.Name] == 0)
+                        currentOccupiedRoomsCount--;
+                    break;
+            }
+            
+            if (currentOccupiedRoomsCount > maxCapacity)
+                return false;
+        }
+        
+        return true;
+    }
 
     class Guest
     {
@@ -65,9 +116,8 @@ class HotelCapacity
             guests.Add(guest);
         }
 
-
         var result = CheckCapacity(maxCapacity, guests);
-
+        // var result = CheckCapacityIfExtensionAllowed(maxCapacity, guests);
 
         Console.WriteLine(result ? "True" : "False");
     }
