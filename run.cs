@@ -68,6 +68,13 @@ class HotelCapacity
                 : first.Status.CompareTo(second.Status);
         });
 
+        return CheckCapacityIfExtensionAllowed(maxCapacity, bookings, currentBookingsCountByName);
+    }
+
+    static bool CheckCapacityIfExtensionAllowed(int maxCapacity, 
+        List<(string Name, string Date, BookingStatus Status)> bookings, 
+        Dictionary<string, int> currentBookingsCountByName)
+    {
         var currentOccupiedRoomsCount = 0;
         foreach (var booking in bookings)
         {
