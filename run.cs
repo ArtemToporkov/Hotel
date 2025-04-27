@@ -15,7 +15,7 @@ class HotelCapacity
     /// Если может, то он занимает тот же номер, поэтому нужно учесть продление брониварония,
     /// как это делается в методе CheckCapacityIfExtensionAllowed.
     /// </summary>
-    static bool CheckCapacity(int maxCapacity, List<Guest> guests)
+    private static bool CheckCapacity(int maxCapacity, List<Guest> guests)
     {
         var bookings = new List<(string Date, BookingStatus Status)>();
         foreach (var guest in guests)
@@ -49,7 +49,7 @@ class HotelCapacity
     /// Проверяет, возможно ли разместить всех гостей, если допускать продлевание бронирования.
     /// Учитывает случаи, когда в списке гостей встречается один и тот же гость, даты бронирований которого пересекаются.
     /// </summary>
-    static bool CheckCapacityIfExtensionAllowed(int maxCapacity, List<Guest> guests)
+    private static bool CheckCapacityIfExtensionAllowed(int maxCapacity, List<Guest> guests)
     {
         var bookings = new List<(string Name, string Date, BookingStatus Status)>();
         var currentBookingsCountByName = new Dictionary<string, int>();
@@ -71,7 +71,7 @@ class HotelCapacity
         return CheckCapacityIfExtensionAllowed(maxCapacity, bookings, currentBookingsCountByName);
     }
 
-    static bool CheckCapacityIfExtensionAllowed(int maxCapacity, 
+    private static bool CheckCapacityIfExtensionAllowed(int maxCapacity, 
         List<(string Name, string Date, BookingStatus Status)> bookings, 
         Dictionary<string, int> currentBookingsCountByName)
     {
@@ -99,7 +99,7 @@ class HotelCapacity
         return true;
     }
 
-    class Guest
+    private class Guest
     {
         public string Name { get; set; }
         public string CheckIn { get; set; }
@@ -107,7 +107,7 @@ class HotelCapacity
     }
 
 
-    static void Main()
+    public static void Main()
     {
         var maxCapacity = int.Parse(Console.ReadLine()!);
         var n = int.Parse(Console.ReadLine()!);
@@ -130,7 +130,7 @@ class HotelCapacity
     }
 
 
-    static Guest ParseGuest(string json)
+    private static Guest ParseGuest(string json)
     {
         var guest = new Guest();
         
