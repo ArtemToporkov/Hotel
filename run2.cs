@@ -11,11 +11,7 @@ class Program
     public static void Main()
     {
         var data = GetInput();
-        var sw = new Stopwatch();
-        sw.Start();
         var result = Solve(data);
-        sw.Stop();
-        Console.WriteLine(sw.Elapsed.Milliseconds);
         
         if (result == -1)
             Console.WriteLine("No solution found");
