@@ -8,7 +8,7 @@ class Program
 {
     private static readonly (int Dx, int Dy)[] Moves = { (-1, 0), (1, 0), (0, -1), (0, 1) };
 
-    public static void Main()
+    public static void Main2()
     {
         var data = GetInput();
         var result = Solve(data);

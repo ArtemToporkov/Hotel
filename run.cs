@@ -10,6 +10,28 @@ public enum BookingStatus
 
 class HotelCapacity
 {
+    public static void Main()
+    {
+        var maxCapacity = int.Parse(Console.ReadLine()!);
+        var n = int.Parse(Console.ReadLine()!);
+
+
+        var guests = new List<Guest>();
+
+
+        for (var i = 0; i < n; i++)
+        {
+            var line = Console.ReadLine()!;
+            var guest = ParseGuest(line);
+            guests.Add(guest);
+        }
+
+        var result = CheckCapacity(maxCapacity, guests);
+        // var result = CheckCapacityIfExtensionAllowed(maxCapacity, guests);
+
+        Console.WriteLine(result ? "True" : "False");
+    }
+    
     /// <summary>
     /// В условии не сказано про то, может ли один и тот же гость встречаться в списке дважды.
     /// Если может, то он занимает тот же номер, поэтому нужно учесть продление брониварония,
@@ -104,29 +126,6 @@ class HotelCapacity
         public string Name { get; set; }
         public string CheckIn { get; set; }
         public string CheckOut { get; set; }
-    }
-
-
-    public static void Main2()
-    {
-        var maxCapacity = int.Parse(Console.ReadLine()!);
-        var n = int.Parse(Console.ReadLine()!);
-
-
-        var guests = new List<Guest>();
-
-
-        for (var i = 0; i < n; i++)
-        {
-            var line = Console.ReadLine()!;
-            var guest = ParseGuest(line);
-            guests.Add(guest);
-        }
-
-        var result = CheckCapacity(maxCapacity, guests);
-        // var result = CheckCapacityIfExtensionAllowed(maxCapacity, guests);
-
-        Console.WriteLine(result ? "True" : "False");
     }
 
 
