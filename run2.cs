@@ -61,36 +61,40 @@ class Program
         return result == int.MaxValue ? -1 : result;
     }
 
-    private static Dictionary<char, (int Distance, int RequiredKeysMask)> BfsFromPosition(List<List<char>> data, int startX, int startY)
+    private static Dictionary<char, List<(int Distance, int RequiredKeysMask)>> BfsFromPosition(List<List<char>> data, int startX, int startY)
     {
         var width = data.Count;
         var height = data[0].Count;
-        var result = new Dictionary<char, (int Distance, int RequiredKeysMask)>();
-        var visited = new bool[width, height];
+        var result = new Dictionary<char, List<(int Distance, int RequiredKeysMask)>>();
+        var visited = new HashSet<(int X, int Y, int RequiredKeysMask)> { (startX, startY, 0) };
         var queue = new Queue<(int X, int Y, int Distance, int RequiredKeysMask)>();
         queue.Enqueue((startX, startY, 0, 0));
-        visited[startX, startY] = true;
         while (queue.Any())
         {
             var (x, y, distance, requiredKeysMask) = queue.Dequeue();
             var cell = data[x][y];
             
             if (cell is >= 'a' and <= 'z' && (x != startX || y != startY))
-                if (!result.ContainsKey(cell) || result[cell].Distance > distance)
-                    result[cell] = (distance, requiredKeysMask);
+            {
+                if (!result.ContainsKey(cell))
+                    result[cell] = new();
+                result[cell].Add((distance, requiredKeysMask));
+            }
             
             for (var i = 0; i < 4; i++)
             {
                 var (newX, newY) = (x + Moves[i].Dx, y + Moves[i].Dy);
                 if (newX < 0 || newX >= width || newY < 0 || newY >= height
-                    || visited[newX, newY] || data[newX][newY] == '#')
+                    || data[newX][newY] == '#')
                     continue;
 
                 var movedTo = data[newX][newY];
                 var newRequiredKeysMask = requiredKeysMask;
                 if (movedTo is >= 'A' and <= 'Z')
                     newRequiredKeysMask |= 1 << (movedTo - 'A');
-                visited[newX, newY] = true;
+
+                if (!visited.Add((newX, newY, newRequiredKeysMask)))
+                    continue;
                 queue.Enqueue((newX, newY, distance + 1, newRequiredKeysMask));
             }
         }
@@ -98,10 +102,10 @@ class Program
         return result;
     }
 
-    private static Dictionary<char, Dictionary<char, (int Distance, int RequiredKeysMask)>> GetGraph(
+    private static Dictionary<char, Dictionary<char, List<(int Distance, int RequiredKeysMask)>>> GetGraph(
         List<List<char>> data, (int X, int Y)[] starts)
     {
-        var graph = new Dictionary<char, Dictionary<char, (int Distance, int RequiredKeysMask)>>();
+        var graph = new Dictionary<char, Dictionary<char, List<(int Distance, int RequiredKeysMask)>>>();
         for (var i = 0; i < 4; i++)
         {
             var edges = BfsFromPosition(data, starts[i].X, starts[i].Y);
@@ -129,7 +133,7 @@ class Program
 
     private static int Dfs(char[] positions, int keysCollectedMask, int requiredKeysMask, 
         Dictionary<(char, char, char, char, int KeysCollectedMask), int> cache, 
-        Dictionary<char, Dictionary<char, (int Distance, int RequiredKeysMask)>> graph)
+        Dictionary<char, Dictionary<char, List<(int Distance, int RequiredKeysMask)>>> graph)
     {
         if (keysCollectedMask == requiredKeysMask)
             return 0;
@@ -144,18 +148,21 @@ class Program
             var currentPosition = positions[i];
             if (!graph.ContainsKey(currentPosition))
                 continue;
-            foreach (var (to, edge) in graph[currentPosition])
+            foreach (var (to, edges) in graph[currentPosition])
             {
-                var keyMask = 1 << (to - 'a');
-                if ((keysCollectedMask & keyMask) != 0 || 
-                    (edge.RequiredKeysMask & keysCollectedMask) != edge.RequiredKeysMask)
-                    continue;
+                foreach (var edge in edges) 
+                {
+                    var keyMask = 1 << (to - 'a');
+                    if ((keysCollectedMask & keyMask) != 0 || 
+                        (edge.RequiredKeysMask & keysCollectedMask) != edge.RequiredKeysMask)
+                        continue;
 
-                var newPositions = positions.ToArray();
-                newPositions[i] = to;
-                var distance = Dfs(newPositions, keysCollectedMask | keyMask, requiredKeysMask, cache, graph);
-                if (distance != int.MaxValue)
-                    ans = Math.Min(ans, edge.Distance + distance);
+                    var newPositions = positions.ToArray();
+                    newPositions[i] = to;
+                    var distance = Dfs(newPositions, keysCollectedMask | keyMask, requiredKeysMask, cache, graph);
+                    if (distance != int.MaxValue)
+                        ans = Math.Min(ans, edge.Distance + distance);
+                }
             }
         }
 
