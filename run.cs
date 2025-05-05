@@ -107,7 +107,7 @@ class HotelCapacity
     }
 
 
-    public static void Main()
+    public static void Main2()
     {
         var maxCapacity = int.Parse(Console.ReadLine()!);
         var n = int.Parse(Console.ReadLine()!);
