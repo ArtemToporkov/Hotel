@@ -61,11 +61,12 @@ class Program
         return result == int.MaxValue ? -1 : result;
     }
 
-    private static Dictionary<char, List<(int Distance, int RequiredKeysMask)>> BfsFromPosition(List<List<char>> data, int startX, int startY)
+    private static Dictionary<char, HashSet<(int Distance, int RequiredKeysMask)>> BfsFromPosition(
+        List<List<char>> data, int startX, int startY)
     {
         var width = data.Count;
         var height = data[0].Count;
-        var result = new Dictionary<char, List<(int Distance, int RequiredKeysMask)>>();
+        var result = new Dictionary<char, HashSet<(int Distance, int RequiredKeysMask)>>();
         var visited = new HashSet<(int X, int Y, int RequiredKeysMask)> { (startX, startY, 0) };
         var queue = new Queue<(int X, int Y, int Distance, int RequiredKeysMask)>();
         queue.Enqueue((startX, startY, 0, 0));
@@ -102,10 +103,10 @@ class Program
         return result;
     }
 
-    private static Dictionary<char, Dictionary<char, List<(int Distance, int RequiredKeysMask)>>> GetGraph(
+    private static Dictionary<char, Dictionary<char, HashSet<(int Distance, int RequiredKeysMask)>>> GetGraph(
         List<List<char>> data, (int X, int Y)[] starts)
     {
-        var graph = new Dictionary<char, Dictionary<char, List<(int Distance, int RequiredKeysMask)>>>();
+        var graph = new Dictionary<char, Dictionary<char, HashSet<(int Distance, int RequiredKeysMask)>>>();
         for (var i = 0; i < 4; i++)
         {
             var edges = BfsFromPosition(data, starts[i].X, starts[i].Y);
@@ -133,7 +134,7 @@ class Program
 
     private static int Dfs(char[] positions, int keysCollectedMask, int requiredKeysMask, 
         Dictionary<(char, char, char, char, int KeysCollectedMask), int> cache, 
-        Dictionary<char, Dictionary<char, List<(int Distance, int RequiredKeysMask)>>> graph)
+        Dictionary<char, Dictionary<char, HashSet<(int Distance, int RequiredKeysMask)>>> graph)
     {
         if (keysCollectedMask == requiredKeysMask)
             return 0;
@@ -143,7 +144,7 @@ class Program
             return dfs;
 
         var ans = int.MaxValue;
-        for (var i = 0; i < positions.Length; i++)
+        for (var i = 0; i < 4; i++)
         {
             var currentPosition = positions[i];
             if (!graph.ContainsKey(currentPosition))
@@ -156,10 +157,10 @@ class Program
                     if ((keysCollectedMask & keyMask) != 0 || 
                         (edge.RequiredKeysMask & keysCollectedMask) != edge.RequiredKeysMask)
                         continue;
-
-                    var newPositions = positions.ToArray();
-                    newPositions[i] = to;
-                    var distance = Dfs(newPositions, keysCollectedMask | keyMask, requiredKeysMask, cache, graph);
+                    var previousPosition = positions[i];
+                    positions[i] = to;
+                    var distance = Dfs(positions, keysCollectedMask | keyMask, requiredKeysMask, cache, graph);
+                    positions[i] = previousPosition;
                     if (distance != int.MaxValue)
                         ans = Math.Min(ans, edge.Distance + distance);
                 }
