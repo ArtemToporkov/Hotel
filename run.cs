@@ -15,9 +15,7 @@ class HotelCapacity
         var maxCapacity = int.Parse(Console.ReadLine()!);
         var n = int.Parse(Console.ReadLine()!);
 
-
         var guests = new List<Guest>();
-
 
         for (var i = 0; i < n; i++)
         {
