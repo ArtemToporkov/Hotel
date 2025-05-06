@@ -7,7 +7,7 @@ using System.Linq;
 class Program
 {
     private static readonly (int Dx, int Dy)[] Moves = { (-1, 0), (1, 0), (0, -1), (0, 1) };
-    private const int LimitForDifferentWaysToHitTheCell = 10;
+    private const int Limit = 30;
 
     public static void Main2()
     {
@@ -90,7 +90,7 @@ class Program
             {
                 var (newX, newY) = (x + Moves[i].Dx, y + Moves[i].Dy);
                 if (newX < 0 || newX >= width || newY < 0 || newY >= height
-                    || data[newX][newY] == '#' || data[newX][newY] == '@')
+                    || data[newX][newY] == '#')
                     continue;
 
                 var movedTo = data[newX][newY];
@@ -99,7 +99,7 @@ class Program
                     newRequiredKeysMask |= 1 << (movedTo - 'A');
 
                 if (visited.TryGetValue((newX, newY), out var masks) 
-                    && (masks.Count >= LimitForDifferentWaysToHitTheCell || !masks.Add(newRequiredKeysMask)))
+                    && (masks.Count >= Limit || !masks.Add(newRequiredKeysMask)))
                     continue;
                 queue.Enqueue((newX, newY, distance + 1, newRequiredKeysMask));
                 if (!visited.ContainsKey((newX, newY)))
