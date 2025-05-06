@@ -7,6 +7,7 @@ using System.Linq;
 class Program
 {
     private static readonly (int Dx, int Dy)[] Moves = { (-1, 0), (1, 0), (0, -1), (0, 1) };
+    private const int LimitForDifferentWaysToHitTheCell = 10;
 
     public static void Main2()
     {
@@ -67,7 +68,10 @@ class Program
         var width = data.Count;
         var height = data[0].Count;
         var result = new Dictionary<char, HashSet<(int Distance, int RequiredKeysMask)>>();
-        var visited = new HashSet<(int X, int Y, int RequiredKeysMask)> { (startX, startY, 0) };
+        var visited = new Dictionary<(int X, int Y), HashSet<int>>
+        {
+            [(startX, startY)] = new() { 0 }
+        };
         var queue = new Queue<(int X, int Y, int Distance, int RequiredKeysMask)>();
         queue.Enqueue((startX, startY, 0, 0));
         while (queue.Any())
@@ -86,7 +90,7 @@ class Program
             {
                 var (newX, newY) = (x + Moves[i].Dx, y + Moves[i].Dy);
                 if (newX < 0 || newX >= width || newY < 0 || newY >= height
-                    || data[newX][newY] == '#')
+                    || data[newX][newY] == '#' || data[newX][newY] == '@')
                     continue;
 
                 var movedTo = data[newX][newY];
@@ -94,9 +98,12 @@ class Program
                 if (movedTo is >= 'A' and <= 'Z')
                     newRequiredKeysMask |= 1 << (movedTo - 'A');
 
-                if (!visited.Add((newX, newY, newRequiredKeysMask)))
+                if (visited.TryGetValue((newX, newY), out var masks) 
+                    && (masks.Count >= LimitForDifferentWaysToHitTheCell || !masks.Add(newRequiredKeysMask)))
                     continue;
                 queue.Enqueue((newX, newY, distance + 1, newRequiredKeysMask));
+                if (!visited.ContainsKey((newX, newY)))
+                    visited[(newX, newY)] = new() { newRequiredKeysMask };
             }
         }
 
